@@ -11,6 +11,6 @@ def root():
     return {"message": "Gestor Nutricional funcionando"}
 
 
-@app.post("/foods")
+@app.post("/inventory-items")
 def create_inventory_item_endpoint(item: InventoryItemCreate):
     return create_inventory_item(item)
