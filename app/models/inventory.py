@@ -6,8 +6,9 @@ from app.schemas.food import InventoryItemStatus
 
 @dataclass
 class InventoryItem:
-    """Representa una existencia concreta de un producto en el inventario."""
+    """Representa una existencia concreta de un producto en un espacio."""
 
+    space_id: int
     product_id: int
     status: InventoryItemStatus
     quantity: float | None = None

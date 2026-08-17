@@ -11,6 +11,9 @@ class InventoryItemStatus(str, Enum):
 
 
 class InventoryItemCreate(BaseModel):
+    """Datos necesarios para crear un elemento de inventario."""
+
+    space_id: int
     product_id: int
     quantity: float | None = None
     unit: str | None = None

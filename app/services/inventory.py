@@ -9,6 +9,7 @@ def create_inventory_item(item: InventoryItemCreate) -> InventoryItem:
     now = datetime.now()
 
     return InventoryItem(
+        space_id=item.space_id,
         product_id=item.product_id,
         status=item.status,
         quantity=item.quantity,
