@@ -18,3 +18,11 @@ def create_product(db: Session, product: ProductCreate):
     db.refresh(db_product)
 
     return db_product
+
+
+def get_products(db: Session):
+    """
+    Devuelve todos los productos almacenados.
+    """
+
+    return db.query(Product).all()

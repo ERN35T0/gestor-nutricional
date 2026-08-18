@@ -8,7 +8,7 @@ from app.services.inventory import create_inventory_item
 from app.schemas.space import SpaceCreate
 from app.services.space import create_space
 from app.schemas.product import ProductCreate
-from app.services.product import create_product
+from app.services.product import create_product, get_products
 
 app = FastAPI()
 
@@ -47,3 +47,13 @@ def create_product_endpoint(
     Crea un nuevo producto.
     """
     return create_product(db, product)
+
+@app.get("/products")
+def get_products_endpoint(
+    db: Session = Depends(get_db)
+):
+    """
+    Lista todos los productos.
+    """
+
+    return get_products(db)
