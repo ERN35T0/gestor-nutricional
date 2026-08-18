@@ -8,7 +8,7 @@ from app.services.inventory import create_inventory_item
 from app.schemas.space import SpaceCreate
 from app.services.space import create_space
 from app.schemas.product import ProductCreate
-from app.services.product import create_product, get_products
+from app.services.product import create_product, get_products, get_product
 
 app = FastAPI()
 
@@ -57,3 +57,19 @@ def get_products_endpoint(
     """
 
     return get_products(db)
+
+@app.get("/products/{product_id}")
+def get_product_endpoint(
+    product_id: int,
+    db: Session = Depends(get_db)
+):
+    """
+    Obtiene un producto por id.
+    """
+
+    product = get_product(db, product_id)
+
+    if product is None:
+        return {"detail": "Product not found"}
+
+    return product

@@ -19,6 +19,17 @@ def create_product(db: Session, product: ProductCreate):
 
     return db_product
 
+def get_product(db: Session, product_id: int):
+    """
+    Obtiene un producto por su id.
+    """
+
+    return (
+        db.query(Product)
+        .filter(Product.id == product_id)
+        .first()
+    )
+
 
 def get_products(db: Session):
     """
