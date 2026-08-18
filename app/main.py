@@ -4,11 +4,17 @@ from sqlalchemy.orm import Session
 from app.db.session import SessionLocal
 
 from app.schemas.food import InventoryItemCreate
-from app.services.inventory import create_inventory_item
+from app.schemas.product import ProductCreate, ProductUpdate
 from app.schemas.space import SpaceCreate
+
+from app.services.inventory import create_inventory_item
+from app.services.product import (
+    create_product,
+    get_products,
+    get_product,
+    update_product,
+)
 from app.services.space import create_space
-from app.schemas.product import ProductCreate
-from app.services.product import create_product, get_products, get_product
 
 app = FastAPI()
 
@@ -76,3 +82,23 @@ def get_product_endpoint(
         )
 
     return product
+
+@app.put("/products/{product_id}")
+def update_product_endpoint(
+    product_id: int,
+    product: ProductUpdate,
+    db: Session = Depends(get_db)
+):
+    """
+    Actualiza un producto.
+    """
+
+    updated_product = update_product(db, product_id, product)
+
+    if updated_product is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Product not found"
+        )
+
+    return updated_product

@@ -9,6 +9,14 @@ class ProductCreate(BaseModel):
     name: str
 
 
+class ProductUpdate(BaseModel):
+    """
+    Datos permitidos para actualizar un producto.
+    """
+
+    name: str
+
+
 class ProductResponse(BaseModel):
     """
     Datos devueltos por la API.

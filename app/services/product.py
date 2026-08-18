@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 
 from app.models.product import Product
-from app.schemas.product import ProductCreate
+from app.schemas.product import ProductCreate, ProductUpdate
 
 
 def create_product(db: Session, product: ProductCreate):
@@ -37,3 +37,21 @@ def get_products(db: Session):
     """
 
     return db.query(Product).all()
+
+
+def update_product(db: Session, product_id: int, product: ProductUpdate):
+    """
+    Actualiza un producto existente.
+    """
+
+    db_product = db.query(Product).filter(Product.id == product_id).first()
+
+    if db_product is None:
+        return None
+
+    db_product.name = product.name
+
+    db.commit()
+    db.refresh(db_product)
+
+    return db_product
