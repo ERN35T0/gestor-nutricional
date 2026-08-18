@@ -5,5 +5,7 @@ description = "Gestor nutricional inteligente"
 requires-python = ">=3.14"
 dependencies = [
     "fastapi",
-    "uvicorn[standard]"
+    "uvicorn[standard]",
+    "sqlalchemy",
+    "psycopg[binary]",
 ]
