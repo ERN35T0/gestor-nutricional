@@ -1,7 +1,20 @@
+from sqlalchemy.orm import Session
+
 from app.models.product import Product
 from app.schemas.product import ProductCreate
 
 
-def create_product(product: ProductCreate) -> Product:
-    """Crea un Product a partir de los datos validados de entrada."""
-    return Product(name=product.name)
+def create_product(db: Session, product: ProductCreate):
+    """
+    Crea un producto y lo guarda en la base de datos.
+    """
+
+    db_product = Product(
+        name=product.name
+    )
+
+    db.add(db_product)
+    db.commit()
+    db.refresh(db_product)
+
+    return db_product

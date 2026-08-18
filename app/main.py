@@ -1,4 +1,7 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
+from sqlalchemy.orm import Session
+
+from app.db.session import SessionLocal
 
 from app.schemas.food import InventoryItemCreate
 from app.services.inventory import create_inventory_item
@@ -9,6 +12,16 @@ from app.services.product import create_product
 
 app = FastAPI()
 
+def get_db():
+    """
+    Proporciona una sesión de base de datos por petición.
+    """
+    db = SessionLocal()
+
+    try:
+        yield db
+    finally:
+        db.close()
 
 @app.get("/")
 def root():
@@ -26,6 +39,11 @@ def create_space_endpoint(space: SpaceCreate):
     return create_space(space)
 
 @app.post("/products")
-def create_product_endpoint(product: ProductCreate):
-    """Crea un nuevo producto."""
-    return create_product(product)
+def create_product_endpoint(
+    product: ProductCreate,
+    db: Session = Depends(get_db)
+):
+    """
+    Crea un nuevo producto.
+    """
+    return create_product(db, product)
