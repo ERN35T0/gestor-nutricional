@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.db.session import SessionLocal
@@ -70,6 +70,9 @@ def get_product_endpoint(
     product = get_product(db, product_id)
 
     if product is None:
-        return {"detail": "Product not found"}
+        raise HTTPException(
+            status_code=404,
+            detail="Product not found"
+        )
 
     return product
