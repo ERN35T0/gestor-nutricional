@@ -1,8 +1,23 @@
-from dataclasses import dataclass
+from sqlalchemy import Integer, String
+from sqlalchemy.orm import Mapped, mapped_column
+
+from app.db.base import Base
 
 
-@dataclass
-class Space:
-    """Representa un espacio independiente dentro del gestor nutricional."""
+class Space(Base):
+    """
+    Representa un espacio independiente dentro del gestor nutricional.
+    """
 
-    name: str
+    __tablename__ = "spaces"
+
+    id: Mapped[int] = mapped_column(
+        Integer,
+        primary_key=True,
+        index=True
+    )
+
+    name: Mapped[str] = mapped_column(
+        String,
+        nullable=False
+    )

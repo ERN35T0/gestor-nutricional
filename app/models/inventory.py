@@ -1,17 +1,57 @@
-from dataclasses import dataclass
 from datetime import datetime
 
-from app.schemas.food import InventoryItemStatus
+from sqlalchemy import DateTime, Float, ForeignKey, Integer, String
+from sqlalchemy.orm import Mapped, mapped_column
+
+from app.db.base import Base
 
 
-@dataclass
-class InventoryItem:
-    """Representa una existencia concreta de un producto en un espacio."""
+class InventoryItem(Base):
+    """
+    Representa una existencia concreta de un producto en un espacio.
+    """
 
-    space_id: int
-    product_id: int
-    status: InventoryItemStatus
-    quantity: float | None = None
-    unit: str | None = None
-    created_at: datetime | None = None
-    status_changed_at: datetime | None = None
+    __tablename__ = "inventory_items"
+
+    id: Mapped[int] = mapped_column(
+        Integer,
+        primary_key=True,
+        index=True
+    )
+
+    space_id: Mapped[int] = mapped_column(
+        ForeignKey("spaces.id"),
+        nullable=False
+    )
+
+    product_id: Mapped[int] = mapped_column(
+        ForeignKey("products.id"),
+        nullable=False
+    )
+
+    status: Mapped[str] = mapped_column(
+        String(20),
+        nullable=False
+    )
+
+    quantity: Mapped[float | None] = mapped_column(
+        Float,
+        nullable=True
+    )
+
+    unit: Mapped[str | None] = mapped_column(
+        String(20),
+        nullable=True
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        default=datetime.utcnow,
+        nullable=False
+    )
+
+    status_changed_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        default=datetime.utcnow,
+        nullable=False
+    )

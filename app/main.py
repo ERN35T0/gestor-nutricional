@@ -3,11 +3,16 @@ from sqlalchemy.orm import Session
 
 from app.db.session import SessionLocal
 
-from app.schemas.food import InventoryItemCreate
+from app.schemas.food import InventoryItemCreate, InventoryItemUpdate
 from app.schemas.product import ProductCreate, ProductUpdate
 from app.schemas.space import SpaceCreate
 
-from app.services.inventory import create_inventory_item
+from app.services.inventory import (
+    create_inventory_item,
+    get_inventory_items,
+    get_inventory_item,
+    update_inventory_item,
+)
 from app.services.product import (
     create_product,
     get_products,
@@ -35,14 +40,79 @@ def root():
 
 
 @app.post("/inventory-items")
-def create_inventory_item_endpoint(item: InventoryItemCreate):
-    return create_inventory_item(item)
+def create_inventory_item_endpoint(
+    item: InventoryItemCreate,
+    db: Session = Depends(get_db)
+):
+    """
+    Crea un elemento de inventario.
+    """
+
+    return create_inventory_item(db, item)
+
+
+@app.get("/inventory-items")
+def get_inventory_items_endpoint(
+    db: Session = Depends(get_db)
+):
+    """
+    Lista todos los elementos de inventario.
+    """
+
+    return get_inventory_items(db)
+
+@app.get("/inventory-items/{item_id}")
+def get_inventory_item_endpoint(
+    item_id: int,
+    db: Session = Depends(get_db)
+):
+    """
+    Obtiene un elemento de inventario por id.
+    """
+
+    item = get_inventory_item(db, item_id)
+
+    if item is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Inventory item not found"
+        )
+
+    return item
+
+
+@app.put("/inventory-items/{item_id}")
+def update_inventory_item_endpoint(
+    item_id: int,
+    item: InventoryItemUpdate,
+    db: Session = Depends(get_db)
+):
+    """
+    Actualiza un elemento de inventario.
+    """
+
+    updated_item = update_inventory_item(
+        db,
+        item_id,
+        item
+    )
+
+    if updated_item is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Inventory item not found"
+        )
+
+    return updated_item
 
 
 @app.post("/spaces")
-def create_space_endpoint(space: SpaceCreate):
+def create_space_endpoint(
+    space: SpaceCreate,
+    db: Session = Depends(get_db)
+):
     """Crea un nuevo espacio."""
-    return create_space(space)
+    return create_space(db, space)
 
 @app.post("/products")
 def create_product_endpoint(
