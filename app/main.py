@@ -12,6 +12,7 @@ from app.services.inventory import (
     get_inventory_items,
     get_inventory_item,
     update_inventory_item,
+    delete_inventory_item,
 )
 from app.services.product import (
     create_product,
@@ -104,6 +105,26 @@ def update_inventory_item_endpoint(
         )
 
     return updated_item
+
+
+@app.delete("/inventory-items/{item_id}")
+def delete_inventory_item_endpoint(
+    item_id: int,
+    db: Session = Depends(get_db)
+):
+    """
+    Elimina un elemento de inventario.
+    """
+
+    item = delete_inventory_item(db, item_id)
+
+    if item is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Inventory item not found"
+        )
+
+    return item
 
 
 @app.post("/spaces")

@@ -80,3 +80,22 @@ def update_inventory_item(
     db.refresh(db_item)
 
     return db_item
+
+def delete_inventory_item(db: Session, item_id: int):
+    """
+    Elimina un elemento de inventario.
+    """
+
+    db_item = (
+        db.query(InventoryItem)
+        .filter(InventoryItem.id == item_id)
+        .first()
+    )
+
+    if db_item is None:
+        return None
+
+    db.delete(db_item)
+    db.commit()
+
+    return db_item
