@@ -211,3 +211,31 @@ def test_delete_inventory_item(
     )
 
     assert get_response.status_code == 404
+
+
+def test_get_inventory_item_not_found(client):
+    response = client.get("/inventory-items/999")
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Inventory item not found"
+
+
+def test_update_inventory_item_not_found(client):
+    response = client.put(
+        "/inventory-items/999",
+        json={
+            "quantity": 1,
+            "unit": "kg",
+            "status": "started"
+        }
+    )
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Inventory item not found"
+
+
+def test_delete_inventory_item_not_found(client):
+    response = client.delete("/inventory-items/999")
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Inventory item not found"
