@@ -7,6 +7,12 @@ class SpaceCreate(BaseModel):
     name: str
 
 
+class SpaceUpdate(BaseModel):
+    """Datos permitidos para actualizar un espacio."""
+
+    name: str
+
+
 class SpaceResponse(BaseModel):
     """
     Datos devueltos por la API.

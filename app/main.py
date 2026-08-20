@@ -5,7 +5,7 @@ from app.db.session import SessionLocal
 
 from app.schemas.food import InventoryItemCreate, InventoryItemUpdate
 from app.schemas.product import ProductCreate, ProductUpdate
-from app.schemas.space import SpaceCreate
+from app.schemas.space import SpaceCreate, SpaceUpdate
 
 from app.services.inventory import (
     create_inventory_item,
@@ -20,7 +20,12 @@ from app.services.product import (
     get_product,
     update_product,
 )
-from app.services.space import create_space
+from app.services.space import (
+    create_space,
+    get_spaces,
+    get_space,
+    update_space,
+)
 
 app = FastAPI()
 
@@ -134,6 +139,64 @@ def create_space_endpoint(
 ):
     """Crea un nuevo espacio."""
     return create_space(db, space)
+
+
+@app.get("/spaces")
+def get_spaces_endpoint(
+    db: Session = Depends(get_db)
+):
+    """
+    Lista todos los espacios.
+    """
+
+    return get_spaces(db)
+
+
+@app.get("/spaces/{space_id}")
+def get_space_endpoint(
+    space_id: int,
+    db: Session = Depends(get_db)
+):
+    """
+    Obtiene un espacio por id.
+    """
+
+    space = get_space(db, space_id)
+
+    if space is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Space not found"
+        )
+
+    return space
+
+
+
+@app.put("/spaces/{space_id}")
+def update_space_endpoint(
+    space_id: int,
+    space: SpaceUpdate,
+    db: Session = Depends(get_db)
+):
+    """
+    Actualiza un espacio.
+    """
+
+    updated_space = update_space(
+        db,
+        space_id,
+        space
+    )
+
+    if updated_space is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Space not found"
+        )
+
+    return updated_space
+
 
 @app.post("/products")
 def create_product_endpoint(
