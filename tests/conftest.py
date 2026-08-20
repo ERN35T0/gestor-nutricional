@@ -36,3 +36,31 @@ def client(db):
     yield TestClient(app)
 
     app.dependency_overrides.clear()
+
+
+@pytest.fixture
+def create_space(client):
+    response = client.post(
+        "/spaces",
+        json={
+            "name": "Casa"
+        }
+    )
+
+    assert response.status_code == 200
+
+    return response.json()
+
+
+@pytest.fixture
+def create_product(client):
+    response = client.post(
+        "/products",
+        json={
+            "name": "Arroz basmati"
+        }
+    )
+
+    assert response.status_code == 200
+
+    return response.json()
