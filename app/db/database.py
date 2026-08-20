@@ -1,10 +1,13 @@
+import os
+
 from sqlalchemy import create_engine, text
 
 from app.db.base import Base
-from app.models import Product
+from app.models import Product, Space, InventoryItem
 
 
-DATABASE_URL = (
+DATABASE_URL = os.getenv(
+    "DATABASE_URL",
     "postgresql+psycopg://gestor:gestor@localhost:5432/gestor_nutricional"
 )
 

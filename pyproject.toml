@@ -3,9 +3,21 @@ name = "gestor-nutricional"
 version = "0.1.0"
 description = "Gestor nutricional inteligente"
 requires-python = ">=3.14"
+
 dependencies = [
     "fastapi",
     "uvicorn[standard]",
     "sqlalchemy",
     "psycopg[binary]",
+    "httpx",
+]
+
+[dependency-groups]
+dev = [
+    "pytest",
+]
+
+[tool.pytest.ini_options]
+pythonpath = [
+    "."
 ]
