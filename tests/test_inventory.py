@@ -10,7 +10,7 @@ def test_create_inventory_item(
             "product_id": create_product["id"],
             "quantity": 2,
             "unit": "kg",
-            "status": "closed"
+            "status": "available"
         }
     )
 
@@ -22,7 +22,7 @@ def test_create_inventory_item(
     assert data["product_id"] == create_product["id"]
     assert data["quantity"] == 2
     assert data["unit"] == "kg"
-    assert data["status"] == "closed"
+    assert data["status"] == "available"
 
 
 def test_get_inventory_items(
@@ -37,7 +37,7 @@ def test_get_inventory_items(
             "product_id": create_product["id"],
             "quantity": 2,
             "unit": "kg",
-            "status": "closed"
+            "status": "available"
         }
     )
 
@@ -52,7 +52,7 @@ def test_get_inventory_items(
     assert data[0]["product_id"] == create_product["id"]
     assert data[0]["quantity"] == 2
     assert data[0]["unit"] == "kg"
-    assert data[0]["status"] == "closed"
+    assert data[0]["status"] == "available"
 
 
 def test_get_inventory_item(
@@ -67,7 +67,7 @@ def test_get_inventory_item(
             "product_id": create_product["id"],
             "quantity": 2,
             "unit": "kg",
-            "status": "closed"
+            "status": "available"
         }
     )
 
@@ -86,7 +86,7 @@ def test_get_inventory_item(
     assert data["product_id"] == create_product["id"]
     assert data["quantity"] == 2
     assert data["unit"] == "kg"
-    assert data["status"] == "closed"
+    assert data["status"] == "available"
 
 
 def test_update_inventory_item(
@@ -101,7 +101,7 @@ def test_update_inventory_item(
             "product_id": create_product["id"],
             "quantity": 2,
             "unit": "kg",
-            "status": "closed"
+            "status": "available"
         }
     )
 
@@ -190,7 +190,7 @@ def test_delete_inventory_item(
             "product_id": create_product["id"],
             "quantity": 2,
             "unit": "kg",
-            "status": "closed"
+            "status": "available"
         }
     )
 

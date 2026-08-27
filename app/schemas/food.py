@@ -1,16 +1,13 @@
 from datetime import datetime
 from enum import Enum
 
-from pydantic import BaseModel, model_validator
+from pydantic import BaseModel, ConfigDict, model_validator
 
 
 class InventoryItemStatus(str, Enum):
-    CLOSED = "closed"
+    AVAILABLE = "available"
     STARTED = "started"
-    FROZEN = "frozen"
     CONSUMED = "consumed"
-
-
 class InventoryItemCreate(BaseModel):
     """Datos necesarios para crear un elemento de inventario."""
 
@@ -56,6 +53,4 @@ class InventoryItemResponse(BaseModel):
     status: InventoryItemStatus
     created_at: datetime
     status_changed_at: datetime
-
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

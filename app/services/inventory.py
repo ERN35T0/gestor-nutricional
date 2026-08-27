@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import UTC, datetime
 
 from sqlalchemy.orm import Session
 
@@ -71,10 +71,27 @@ def update_inventory_item(
 
     db_item.quantity = item.quantity
     db_item.unit = item.unit
-    db_item.status = item.status
+    # Validar transición de estados
+    allowed_transitions = {
+        "available": ["started", "consumed"],
+        "started": ["consumed"],
+        "consumed": []  # No se permite cambiar una vez consumido
+    }
 
-    if status_changed:
-        db_item.status_changed_at = datetime.utcnow()
+    new_status = item.status.value if hasattr(item.status, 'value') else item.status
+    current_status = db_item.status
+
+    if new_status != current_status:
+        if new_status not in allowed_transitions.get(current_status, []):
+            # La transición no está permitida → lanzamos error
+            raise ValueError(
+                f"Transición de estado inválida: {current_status} → {new_status}"
+            )
+        db_item.status = new_status
+        db_item.status_changed_at = datetime.now(UTC)
+    else:
+        if status_changed:
+            db_item.status_changed_at = datetime.now(UTC)
 
     db.commit()
     db.refresh(db_item)
