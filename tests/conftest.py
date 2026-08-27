@@ -64,3 +64,16 @@ def create_product(client):
     assert response.status_code == 200
 
     return response.json()
+
+@pytest.fixture
+def create_recipe(client):
+    response = client.post(
+        "/recipes",
+        json={
+            "name": "Lentejas",
+        },
+    )
+
+    assert response.status_code == 200
+
+    return response.json()

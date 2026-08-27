@@ -13,6 +13,11 @@ from app.schemas.recipe_ingredient import (
     RecipeIngredientUpdate,
 )
 
+from app.schemas.prepared_meal import (
+    PreparedMealCreate,
+    PreparedMealUpdate,
+)
+
 from app.services.inventory import (
     create_inventory_item,
     get_inventory_items,
@@ -46,6 +51,14 @@ from app.services.space import (
     get_spaces,
     get_space,
     update_space,
+)
+
+from app.services.prepared_meal import (
+    create_prepared_meal,
+    get_prepared_meals,
+    get_prepared_meal,
+    update_prepared_meal,
+    delete_prepared_meal,
 )
 
 app = FastAPI()
@@ -428,3 +441,89 @@ def delete_recipe_ingredient_endpoint(
 
     return ingredient
 
+@app.post("/prepared-meals")
+def create_prepared_meal_endpoint(
+    meal: PreparedMealCreate,
+    db: Session = Depends(get_db),
+):
+    """
+    Crea una preparación o comida preparada.
+    """
+
+    return create_prepared_meal(db, meal)
+
+
+@app.get("/prepared-meals")
+def get_prepared_meals_endpoint(
+    db: Session = Depends(get_db),
+):
+    """
+    Lista todas las preparaciones y comidas preparadas.
+    """
+
+    return get_prepared_meals(db)
+
+
+@app.get("/prepared-meals/{meal_id}")
+def get_prepared_meal_endpoint(
+    meal_id: int,
+    db: Session = Depends(get_db),
+):
+    """
+    Obtiene una preparación o comida preparada por id.
+    """
+
+    meal = get_prepared_meal(db, meal_id)
+
+    if meal is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Prepared meal not found",
+        )
+
+    return meal
+
+
+@app.put("/prepared-meals/{meal_id}")
+def update_prepared_meal_endpoint(
+    meal_id: int,
+    meal: PreparedMealUpdate,
+    db: Session = Depends(get_db),
+):
+    """
+    Actualiza una preparación o comida preparada.
+    """
+
+    updated_meal = update_prepared_meal(
+        db,
+        meal_id,
+        meal,
+    )
+
+    if updated_meal is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Prepared meal not found",
+        )
+
+    return updated_meal
+
+
+@app.delete("/prepared-meals/{meal_id}")
+def delete_prepared_meal_endpoint(
+    meal_id: int,
+    db: Session = Depends(get_db),
+):
+    """
+    Elimina una preparación o comida preparada.
+    """
+
+    meal = delete_prepared_meal(db, meal_id)
+
+    if meal is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Prepared meal not found",
+        )
+
+    return meal
