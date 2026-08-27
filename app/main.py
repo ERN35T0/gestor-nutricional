@@ -8,6 +8,11 @@ from app.schemas.product import ProductCreate, ProductUpdate
 from app.schemas.space import SpaceCreate, SpaceUpdate
 from app.schemas.recipe import RecipeCreate, RecipeUpdate
 
+from app.schemas.recipe_ingredient import (
+    RecipeIngredientCreate,
+    RecipeIngredientUpdate,
+)
+
 from app.services.inventory import (
     create_inventory_item,
     get_inventory_items,
@@ -27,6 +32,15 @@ from app.services.recipe import (
     get_recipe,
     update_recipe,
 )
+
+from app.services.recipe_ingredient import (
+    create_recipe_ingredient,
+    get_recipe_ingredients,
+    get_recipe_ingredient,
+    update_recipe_ingredient,
+    delete_recipe_ingredient,
+)
+
 from app.services.space import (
     create_space,
     get_spaces,
@@ -329,3 +343,88 @@ def update_recipe_endpoint(
         )
 
     return updated_recipe
+
+@app.post("/recipe-ingredients")
+def create_recipe_ingredient_endpoint(
+    ingredient: RecipeIngredientCreate,
+    db: Session = Depends(get_db),
+):
+    """
+    Añade un ingrediente a una receta.
+    """
+
+    return create_recipe_ingredient(db, ingredient)
+
+@app.get("/recipes/{recipe_id}/ingredients")
+def get_recipe_ingredients_endpoint(
+    recipe_id: int,
+    db: Session = Depends(get_db),
+):
+    """
+    Lista todos los ingredientes de una receta.
+    """
+
+    return get_recipe_ingredients(db, recipe_id)
+
+@app.get("/recipe-ingredients/{ingredient_id}")
+def get_recipe_ingredient_endpoint(
+    ingredient_id: int,
+    db: Session = Depends(get_db),
+):
+    """
+    Obtiene un ingrediente de receta por id.
+    """
+
+    ingredient = get_recipe_ingredient(db, ingredient_id)
+
+    if ingredient is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Recipe ingredient not found",
+        )
+
+    return ingredient
+
+@app.put("/recipe-ingredients/{ingredient_id}")
+def update_recipe_ingredient_endpoint(
+    ingredient_id: int,
+    ingredient: RecipeIngredientUpdate,
+    db: Session = Depends(get_db),
+):
+    """
+    Actualiza un ingrediente de receta.
+    """
+
+    updated_ingredient = update_recipe_ingredient(
+        db,
+        ingredient_id,
+        ingredient,
+    )
+
+    if updated_ingredient is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Recipe ingredient not found",
+        )
+
+    return updated_ingredient
+
+@app.delete("/recipe-ingredients/{ingredient_id}")
+def delete_recipe_ingredient_endpoint(
+    ingredient_id: int,
+    db: Session = Depends(get_db),
+):
+    """
+    Elimina un ingrediente de receta.
+    """
+
+    ingredient = delete_recipe_ingredient(db, ingredient_id)
+
+    if ingredient is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Recipe ingredient not found",
+        )
+
+    return ingredient
+
