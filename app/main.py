@@ -6,6 +6,7 @@ from app.db.session import SessionLocal
 from app.schemas.food import InventoryItemCreate, InventoryItemUpdate
 from app.schemas.product import ProductCreate, ProductUpdate
 from app.schemas.space import SpaceCreate, SpaceUpdate
+from app.schemas.recipe import RecipeCreate, RecipeUpdate
 
 from app.services.inventory import (
     create_inventory_item,
@@ -19,6 +20,12 @@ from app.services.product import (
     get_products,
     get_product,
     update_product,
+)
+from app.services.recipe import (
+    create_recipe,
+    get_recipes,
+    get_recipe,
+    update_recipe,
 )
 from app.services.space import (
     create_space,
@@ -255,4 +262,70 @@ def update_product_endpoint(
             detail="Product not found"
         )
 
+
     return updated_product
+
+@app.post("/recipes")
+def create_recipe_endpoint(
+    recipe: RecipeCreate,
+    db: Session = Depends(get_db)
+):
+    """
+    Crea una nueva receta.
+    """
+    return create_recipe(db, recipe)
+
+
+@app.get("/recipes")
+def get_recipes_endpoint(
+    db: Session = Depends(get_db)
+):
+    """
+    Lista todas las recetas.
+    """
+    return get_recipes(db)
+
+
+@app.get("/recipes/{recipe_id}")
+def get_recipe_endpoint(
+    recipe_id: int,
+    db: Session = Depends(get_db)
+):
+    """
+    Obtiene una receta por id.
+    """
+
+    recipe = get_recipe(db, recipe_id)
+
+    if recipe is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Recipe not found"
+        )
+
+    return recipe
+
+
+@app.put("/recipes/{recipe_id}")
+def update_recipe_endpoint(
+    recipe_id: int,
+    recipe: RecipeUpdate,
+    db: Session = Depends(get_db)
+):
+    """
+    Actualiza una receta.
+    """
+
+    updated_recipe = update_recipe(
+        db,
+        recipe_id,
+        recipe
+    )
+
+    if updated_recipe is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Recipe not found"
+        )
+
+    return updated_recipe
