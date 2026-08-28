@@ -8,6 +8,7 @@ from app.schemas.product import ProductCreate, ProductUpdate
 from app.schemas.space import SpaceCreate, SpaceUpdate
 from app.schemas.recipe import RecipeCreate, RecipeUpdate
 from app.schemas.meal_plan import MealPlanCreate, MealPlanUpdate
+from app.schemas.meal_suggestion import MealSuggestionCreate
 
 from app.schemas.recipe_ingredient import (
     RecipeIngredientCreate,
@@ -19,6 +20,11 @@ from app.schemas.prepared_meal import (
     PreparedMealUpdate,
 )
 
+from app.schemas.meal_slot import (
+    MealSlotCreate,
+    MealSlotUpdate,
+)
+
 from app.services.inventory import (
     create_inventory_item,
     get_inventory_items,
@@ -26,12 +32,14 @@ from app.services.inventory import (
     update_inventory_item,
     delete_inventory_item,
 )
+
 from app.services.product import (
     create_product,
     get_products,
     get_product,
     update_product,
 )
+
 from app.services.recipe import (
     create_recipe,
     get_recipes,
@@ -68,6 +76,22 @@ from app.services.meal_plan import (
     get_meal_plan,
     update_meal_plan,
     delete_meal_plan,
+)
+
+from app.services.meal_slot import (
+    create_meal_slot,
+    get_meal_slots,
+    get_meal_slot,
+    update_meal_slot,
+    delete_meal_slot,
+)
+
+from app.services.meal_suggestion import (
+    create_meal_suggestion,
+    get_meal_suggestions,
+    get_meal_suggestions_for_slot,
+    get_meal_suggestion,
+    delete_meal_suggestion,
 )
 
 app = FastAPI()
@@ -618,3 +642,180 @@ def delete_meal_plan_endpoint(
         )
 
     return plan
+
+@app.post("/meal-slots")
+def create_meal_slot_endpoint(
+    slot: MealSlotCreate,
+    db: Session = Depends(get_db),
+):
+    created_slot = create_meal_slot(db, slot)
+
+    if created_slot is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Meal plan not found",
+        )
+
+    return created_slot
+
+
+@app.get("/meal-slots")
+def get_meal_slots_endpoint(
+    db: Session = Depends(get_db),
+):
+    """
+    Lista todos los huecos de comida.
+    """
+    return get_meal_slots(db)
+
+
+@app.get("/meal-slots/{slot_id}")
+def get_meal_slot_endpoint(
+    slot_id: int,
+    db: Session = Depends(get_db),
+):
+    """
+    Obtiene un hueco de comida por id.
+    """
+    slot = get_meal_slot(db, slot_id)
+
+    if slot is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Meal slot not found",
+        )
+
+    return slot
+
+
+@app.put("/meal-slots/{slot_id}")
+def update_meal_slot_endpoint(
+    slot_id: int,
+    slot: MealSlotUpdate,
+    db: Session = Depends(get_db),
+):
+    """
+    Actualiza un hueco de comida.
+    """
+    updated_slot = update_meal_slot(
+        db,
+        slot_id,
+        slot,
+    )
+
+    if updated_slot is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Meal slot not found",
+        )
+
+    return updated_slot
+
+
+@app.delete("/meal-slots/{slot_id}")
+def delete_meal_slot_endpoint(
+    slot_id: int,
+    db: Session = Depends(get_db),
+):
+    """
+    Elimina un hueco de comida.
+    """
+    slot = delete_meal_slot(db, slot_id)
+
+    if slot is None:
+        raise HTTPException(
+            status_code=404,
+        detail="Meal slot not found",
+    )
+
+    return slot
+
+
+@app.post("/meal-suggestions")
+def create_meal_suggestion_endpoint(
+    suggestion: MealSuggestionCreate,
+    db: Session = Depends(get_db),
+):
+    """
+    Crea una sugerencia de comida.
+    """
+    created_suggestion = create_meal_suggestion(
+        db,
+        suggestion,
+    )
+
+    if created_suggestion is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Meal slot or prepared meal not found",
+        )
+
+    return created_suggestion
+
+
+@app.get("/meal-suggestions")
+def get_meal_suggestions_endpoint(
+    db: Session = Depends(get_db),
+):
+    """
+    Lista todas las sugerencias de comida.
+    """
+    return get_meal_suggestions(db)
+
+
+@app.get("/meal-slots/{meal_slot_id}/suggestions")
+def get_meal_suggestions_for_slot_endpoint(
+    meal_slot_id: int,
+    db: Session = Depends(get_db),
+):
+    """
+    Lista las sugerencias de comida de un hueco concreto.
+    """
+    return get_meal_suggestions_for_slot(
+        db,
+        meal_slot_id,
+    )
+
+
+@app.get("/meal-suggestions/{suggestion_id}")
+def get_meal_suggestion_endpoint(
+    suggestion_id: int,
+    db: Session = Depends(get_db),
+):
+    """
+    Obtiene una sugerencia de comida por id.
+    """
+    suggestion = get_meal_suggestion(
+        db,
+        suggestion_id,
+    )
+
+    if suggestion is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Meal suggestion not found",
+        )
+
+    return suggestion
+
+
+@app.delete("/meal-suggestions/{suggestion_id}")
+def delete_meal_suggestion_endpoint(
+    suggestion_id: int,
+    db: Session = Depends(get_db),
+):
+    """
+    Elimina una sugerencia de comida.
+    """
+    suggestion = delete_meal_suggestion(
+        db,
+        suggestion_id,
+    )
+
+    if suggestion is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Meal suggestion not found",
+        )
+
+    return suggestion

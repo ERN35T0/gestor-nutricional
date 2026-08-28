@@ -1,7 +1,7 @@
 from datetime import UTC, date, datetime
 
 from sqlalchemy import Date, DateTime, Integer
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
 
@@ -33,4 +33,9 @@ class MealPlan(Base):
         DateTime(timezone=True),
         default=lambda: datetime.now(UTC),
         nullable=False
+    )
+
+    meal_slots: Mapped[list["MealSlot"]] = relationship(
+        back_populates="meal_plan",
+        cascade="all, delete-orphan",
     )

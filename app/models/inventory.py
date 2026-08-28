@@ -1,7 +1,7 @@
 from datetime import UTC, datetime
 
 from sqlalchemy import DateTime, Float, ForeignKey, Integer, String
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
 
@@ -16,42 +16,48 @@ class InventoryItem(Base):
     id: Mapped[int] = mapped_column(
         Integer,
         primary_key=True,
-        index=True
+        index=True,
     )
 
     space_id: Mapped[int] = mapped_column(
         ForeignKey("spaces.id"),
-        nullable=False
+        nullable=False,
     )
 
     product_id: Mapped[int] = mapped_column(
         ForeignKey("products.id"),
-        nullable=False
+        nullable=False,
     )
 
     status: Mapped[str] = mapped_column(
         String(20),
-        nullable=False
+        nullable=False,
     )
 
     quantity: Mapped[float | None] = mapped_column(
         Float,
-        nullable=True
+        nullable=True,
     )
 
     unit: Mapped[str | None] = mapped_column(
         String(20),
-        nullable=True
+        nullable=True,
     )
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(UTC),
-        nullable=False
+        nullable=False,
     )
 
     status_changed_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(UTC),
-        nullable=False
+        nullable=False,
+    )
+
+    # Cada existencia del inventario corresponde a un único producto.
+    product: Mapped["Product"] = relationship(
+        "Product",
+        back_populates="inventory_items",
     )

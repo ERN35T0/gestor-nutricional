@@ -5,3 +5,5 @@ from app.models.recipe import Recipe
 from app.models.recipe_ingredient import RecipeIngredient
 from app.models.prepared_meal import PreparedMeal
 from app.models.meal_plan import MealPlan
+from app.models.meal_slot import MealSlot
+from app.models.meal_suggestion import MealSuggestion
