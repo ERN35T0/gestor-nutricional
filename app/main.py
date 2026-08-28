@@ -7,6 +7,7 @@ from app.schemas.food import InventoryItemCreate, InventoryItemUpdate
 from app.schemas.product import ProductCreate, ProductUpdate
 from app.schemas.space import SpaceCreate, SpaceUpdate
 from app.schemas.recipe import RecipeCreate, RecipeUpdate
+from app.schemas.meal_plan import MealPlanCreate, MealPlanUpdate
 
 from app.schemas.recipe_ingredient import (
     RecipeIngredientCreate,
@@ -59,6 +60,14 @@ from app.services.prepared_meal import (
     get_prepared_meal,
     update_prepared_meal,
     delete_prepared_meal,
+)
+
+from app.services.meal_plan import (
+    create_meal_plan,
+    get_meal_plans,
+    get_meal_plan,
+    update_meal_plan,
+    delete_meal_plan,
 )
 
 app = FastAPI()
@@ -527,3 +536,85 @@ def delete_prepared_meal_endpoint(
         )
 
     return meal
+
+@app.post("/meal-plans")
+def create_meal_plan_endpoint(
+    plan: MealPlanCreate,
+    db: Session = Depends(get_db),
+):
+    """
+    Crea una planificación.
+    """
+    return create_meal_plan(db, plan)
+
+
+@app.get("/meal-plans")
+def get_meal_plans_endpoint(
+    db: Session = Depends(get_db),
+):
+    """
+    Lista todas las planificaciones.
+    """
+    return get_meal_plans(db)
+
+
+@app.get("/meal-plans/{plan_id}")
+def get_meal_plan_endpoint(
+    plan_id: int,
+    db: Session = Depends(get_db),
+):
+    """
+    Obtiene una planificación por id.
+    """
+    plan = get_meal_plan(db, plan_id)
+
+    if plan is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Meal plan not found",
+        )
+
+    return plan
+
+
+@app.put("/meal-plans/{plan_id}")
+def update_meal_plan_endpoint(
+    plan_id: int,
+    plan: MealPlanUpdate,
+    db: Session = Depends(get_db),
+):
+    """
+    Actualiza una planificación.
+    """
+    updated_plan = update_meal_plan(
+        db,
+        plan_id,
+        plan,
+    )
+
+    if updated_plan is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Meal plan not found",
+        )
+
+    return updated_plan
+
+
+@app.delete("/meal-plans/{plan_id}")
+def delete_meal_plan_endpoint(
+    plan_id: int,
+    db: Session = Depends(get_db),
+):
+    """
+    Elimina una planificación.
+    """
+    plan = delete_meal_plan(db, plan_id)
+
+    if plan is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Meal plan not found",
+        )
+
+    return plan
