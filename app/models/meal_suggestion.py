@@ -1,4 +1,4 @@
-from sqlalchemy import ForeignKey, Integer
+from sqlalchemy import ForeignKey, Integer, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
@@ -10,6 +10,16 @@ class MealSuggestion(Base):
     """
 
     __tablename__ = "meal_suggestions"
+
+    # Una misma comida no puede aparecer dos veces como sugerencia
+    # dentro del mismo hueco de planificación.
+    __table_args__ = (
+        UniqueConstraint(
+            "meal_slot_id",
+            "prepared_meal_id",
+            name="uq_meal_suggestion_slot_meal",
+        ),
+    )
 
     id: Mapped[int] = mapped_column(
         Integer,

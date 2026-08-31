@@ -363,3 +363,60 @@ def test_relationships_work_after_reload(db):
     assert loaded_slot in loaded_plan.meal_slots
     assert loaded_suggestion in loaded_slot.suggestions
     assert loaded_suggestion in loaded_prepared_meal.meal_suggestions
+
+def test_create_duplicate_meal_suggestion(client):
+    # Creamos una planificación.
+    meal_plan_response = client.post(
+        "/meal-plans",
+        json={
+            "start_date": "2026-08-10",
+            "end_date": "2026-08-16",
+        },
+    )
+
+    meal_plan_id = meal_plan_response.json()["id"]
+
+    # Creamos un hueco dentro de la planificación.
+    meal_slot_response = client.post(
+        "/meal-slots",
+        json={
+            "meal_plan_id": meal_plan_id,
+            "date": "2026-08-10",
+            "meal_type": "breakfast",
+        },
+    )
+
+    meal_slot_id = meal_slot_response.json()["id"]
+
+    # Creamos una comida preparada que podremos sugerir.
+    prepared_meal_response = client.post(
+        "/prepared-meals",
+        json={
+            "name": "Tortilla",
+            "type": "meal",
+        },
+    )
+
+    prepared_meal_id = prepared_meal_response.json()["id"]
+
+    # Primera sugerencia: debe crearse correctamente.
+    first_response = client.post(
+        "/meal-suggestions",
+        json={
+            "meal_slot_id": meal_slot_id,
+            "prepared_meal_id": prepared_meal_id,
+        },
+    )
+
+    assert first_response.status_code == 200
+
+    # Segunda sugerencia idéntica: no debería permitirse.
+    second_response = client.post(
+        "/meal-suggestions",
+        json={
+            "meal_slot_id": meal_slot_id,
+            "prepared_meal_id": prepared_meal_id,
+        },
+    )
+
+    assert second_response.status_code == 400

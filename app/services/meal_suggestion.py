@@ -1,5 +1,7 @@
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from app.exceptions import MealSuggestionAlreadyExistsError
 from app.models.meal_slot import MealSlot
 from app.models.meal_suggestion import MealSuggestion
 from app.models.prepared_meal import PreparedMeal
@@ -38,7 +40,13 @@ def create_meal_suggestion(
     )
 
     db.add(db_suggestion)
-    db.commit()
+
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise MealSuggestionAlreadyExistsError
+
     db.refresh(db_suggestion)
 
     return db_suggestion

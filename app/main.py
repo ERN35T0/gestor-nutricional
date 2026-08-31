@@ -1,8 +1,13 @@
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 
+from app import db
 from app.db.session import SessionLocal
-from app.exceptions import MealSlotDateOutOfRangeError
+
+from app.exceptions import (
+    MealSlotDateOutOfRangeError,
+    MealSuggestionAlreadyExistsError,
+)
 
 from app.schemas.food import InventoryItemCreate, InventoryItemUpdate
 from app.schemas.product import ProductCreate, ProductUpdate
@@ -760,10 +765,17 @@ def create_meal_suggestion_endpoint(
     """
     Crea una sugerencia de comida.
     """
-    created_suggestion = create_meal_suggestion(
-        db,
-        suggestion,
-    )
+
+    try:
+        created_suggestion = create_meal_suggestion(
+            db,
+            suggestion,
+        )
+    except MealSuggestionAlreadyExistsError:
+        raise HTTPException(
+            status_code=400,
+            detail="Meal suggestion already exists",
+        )
 
     if created_suggestion is None:
         raise HTTPException(
