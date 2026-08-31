@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from app.models.meal_slot import MealSlot
 from app.schemas.meal_slot import MealSlotCreate, MealSlotUpdate
 from app.models.meal_plan import MealPlan
+from app.exceptions import MealSlotDateOutOfRangeError
 
 
 def create_meal_slot(
@@ -12,7 +13,6 @@ def create_meal_slot(
     """
     Crea un hueco de comida.
     """
-
     meal_plan = (
         db.query(MealPlan)
         .filter(MealPlan.id == slot.meal_plan_id)
@@ -21,6 +21,14 @@ def create_meal_slot(
 
     if meal_plan is None:
         return None
+
+    # Un hueco solo puede existir dentro del periodo
+    # definido por su planificación.
+    if (
+        slot.date < meal_plan.start_date
+        or slot.date > meal_plan.end_date
+    ):
+        raise MealSlotDateOutOfRangeError
 
     db_slot = MealSlot(
         meal_plan_id=slot.meal_plan_id,
@@ -64,6 +72,8 @@ def update_meal_slot(
     """
     Actualiza un hueco de comida.
     """
+
+    # Primero buscamos el slot que queremos modificar.
     db_slot = (
         db.query(MealSlot)
         .filter(MealSlot.id == slot_id)
@@ -73,6 +83,21 @@ def update_meal_slot(
     if db_slot is None:
         return None
 
+    # Recuperamos la planificación a la que pertenece el slot.
+    meal_plan = (
+        db.query(MealPlan)
+        .filter(MealPlan.id == db_slot.meal_plan_id)
+        .first()
+    )
+
+    # Comprobamos que la nueva fecha siga dentro de la planificación.
+    if (
+        slot.date < meal_plan.start_date
+        or slot.date > meal_plan.end_date
+    ):
+        raise MealSlotDateOutOfRangeError
+
+    # Si la fecha es válida, actualizamos los datos.
     db_slot.date = slot.date
     db_slot.meal_type = slot.meal_type
 

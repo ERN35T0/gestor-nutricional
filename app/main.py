@@ -2,6 +2,7 @@ from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.db.session import SessionLocal
+from app.exceptions import MealSlotDateOutOfRangeError
 
 from app.schemas.food import InventoryItemCreate, InventoryItemUpdate
 from app.schemas.product import ProductCreate, ProductUpdate
@@ -23,6 +24,7 @@ from app.schemas.prepared_meal import (
 from app.schemas.meal_slot import (
     MealSlotCreate,
     MealSlotUpdate,
+    MealSlotResponse,  # Respuesta que devuelve la API.
 )
 
 from app.services.inventory import (
@@ -648,9 +650,21 @@ def create_meal_slot_endpoint(
     slot: MealSlotCreate,
     db: Session = Depends(get_db),
 ):
-    created_slot = create_meal_slot(db, slot)
+    """
+    Crea un hueco de comida.
+    """
+    try:
+        created_slot = create_meal_slot(db, slot)
+
+    except MealSlotDateOutOfRangeError:
+        # El MealPlan existe, pero la fecha no pertenece a su periodo.
+        raise HTTPException(
+            status_code=400,
+            detail="Meal slot date is outside meal plan range",
+        )
 
     if created_slot is None:
+        # El MealPlan indicado no existe.
         raise HTTPException(
             status_code=404,
             detail="Meal plan not found",
@@ -688,22 +702,29 @@ def get_meal_slot_endpoint(
     return slot
 
 
-@app.put("/meal-slots/{slot_id}")
+@app.put("/meal-slots/{slot_id}", response_model=MealSlotResponse)
 def update_meal_slot_endpoint(
     slot_id: int,
     slot: MealSlotUpdate,
     db: Session = Depends(get_db),
 ):
-    """
-    Actualiza un hueco de comida.
-    """
-    updated_slot = update_meal_slot(
-        db,
-        slot_id,
-        slot,
-    )
+    try:
+        # El servicio se encarga de validar la regla de negocio.
+        updated_slot = update_meal_slot(
+            db,
+            slot_id,
+            slot,
+        )
+
+    except MealSlotDateOutOfRangeError:
+        # Convertimos la excepción de dominio en una respuesta HTTP 400.
+        raise HTTPException(
+            status_code=400,
+            detail="Meal slot date must be within meal plan date range",
+        )
 
     if updated_slot is None:
+        # Si el slot no existe, mantenemos el 404.
         raise HTTPException(
             status_code=404,
             detail="Meal slot not found",

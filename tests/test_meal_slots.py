@@ -191,7 +191,7 @@ def test_delete_meal_slot_not_found(client):
     response = client.delete("/meal-slots/999")
 
     assert response.status_code == 404
-    
+
 def test_create_meal_slot_with_invalid_meal_plan(client):
     response = client.post(
         "/meal-slots",
@@ -203,3 +203,113 @@ def test_create_meal_slot_with_invalid_meal_plan(client):
     )
 
     assert response.status_code == 404
+
+def test_create_meal_slot_before_meal_plan_start_date(client):
+    meal_plan_response = client.post(
+        "/meal-plans",
+        json={
+            "start_date": "2026-08-10",
+            "end_date": "2026-08-16",
+        },
+    )
+
+    meal_plan_id = meal_plan_response.json()["id"]
+
+    response = client.post(
+        "/meal-slots",
+        json={
+            "meal_plan_id": meal_plan_id,
+            "date": "2026-08-09",
+            "meal_type": "breakfast",
+        },
+    )
+
+    assert response.status_code == 400
+
+
+def test_create_meal_slot_after_meal_plan_end_date(client):
+    meal_plan_response = client.post(
+        "/meal-plans",
+        json={
+            "start_date": "2026-08-10",
+            "end_date": "2026-08-16",
+        },
+    )
+
+    meal_plan_id = meal_plan_response.json()["id"]
+
+    response = client.post(
+        "/meal-slots",
+        json={
+            "meal_plan_id": meal_plan_id,
+            "date": "2026-08-17",
+            "meal_type": "breakfast",
+        },
+    )
+
+    assert response.status_code == 400
+
+def test_update_meal_slot_before_meal_plan_start_date(client):
+    meal_plan_response = client.post(
+        "/meal-plans",
+        json={
+            "start_date": "2026-08-10",
+            "end_date": "2026-08-16",
+        },
+    )
+
+    meal_plan_id = meal_plan_response.json()["id"]
+
+    create_response = client.post(
+        "/meal-slots",
+        json={
+            "meal_plan_id": meal_plan_id,
+            "date": "2026-08-10",
+            "meal_type": "breakfast",
+        },
+    )
+
+    slot_id = create_response.json()["id"]
+
+    response = client.put(
+        f"/meal-slots/{slot_id}",
+        json={
+            "date": "2026-08-09",
+            "meal_type": "breakfast",
+        },
+    )
+
+    assert response.status_code == 400
+
+
+def test_update_meal_slot_after_meal_plan_end_date(client):
+    meal_plan_response = client.post(
+        "/meal-plans",
+        json={
+            "start_date": "2026-08-10",
+            "end_date": "2026-08-16",
+        },
+    )
+
+    meal_plan_id = meal_plan_response.json()["id"]
+
+    create_response = client.post(
+        "/meal-slots",
+        json={
+            "meal_plan_id": meal_plan_id,
+            "date": "2026-08-10",
+            "meal_type": "breakfast",
+        },
+    )
+
+    slot_id = create_response.json()["id"]
+
+    response = client.put(
+        f"/meal-slots/{slot_id}",
+        json={
+            "date": "2026-08-17",
+            "meal_type": "breakfast",
+        },
+    )
+
+    assert response.status_code == 400
