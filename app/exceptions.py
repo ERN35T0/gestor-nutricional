@@ -11,3 +11,7 @@ class MealSuggestionAlreadyExistsError(Exception):
     que ya existe para ese hueco y comida preparada.
     """
     pass
+
+class MealPlanConfirmedError(Exception):
+
+    pass

@@ -3,7 +3,8 @@ from sqlalchemy.orm import Session
 from app.models.meal_slot import MealSlot
 from app.schemas.meal_slot import MealSlotCreate, MealSlotUpdate
 from app.models.meal_plan import MealPlan
-from app.exceptions import MealSlotDateOutOfRangeError
+from app.exceptions import MealSlotDateOutOfRangeError, MealPlanConfirmedError
+from app.services import meal_plan
 
 
 def create_meal_slot(
@@ -21,6 +22,9 @@ def create_meal_slot(
 
     if meal_plan is None:
         return None
+
+    if meal_plan.status == "confirmed":
+        raise MealPlanConfirmedError
 
     # Un hueco solo puede existir dentro del periodo
     # definido por su planificación.
@@ -72,7 +76,6 @@ def update_meal_slot(
     """
     Actualiza un hueco de comida.
     """
-
     # Primero buscamos el slot que queremos modificar.
     db_slot = (
         db.query(MealSlot)
@@ -89,6 +92,9 @@ def update_meal_slot(
         .filter(MealPlan.id == db_slot.meal_plan_id)
         .first()
     )
+
+    if meal_plan.status == "confirmed":
+        raise MealPlanConfirmedError
 
     # Comprobamos que la nueva fecha siga dentro de la planificación.
     if (
@@ -123,7 +129,16 @@ def delete_meal_slot(
     if db_slot is None:
         return None
 
+    meal_plan = (
+        db.query(MealPlan)
+        .filter(MealPlan.id == db_slot.meal_plan_id)
+        .first()
+    )
+
+    if meal_plan.status == "confirmed":
+        raise MealPlanConfirmedError
+
     db.delete(db_slot)
     db.commit()
 
-    return db_slot
+    return {"id": slot_id}

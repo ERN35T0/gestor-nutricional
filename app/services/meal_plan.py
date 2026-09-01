@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 
 from app.models.meal_plan import MealPlan
 from app.schemas.meal_plan import MealPlanCreate, MealPlanUpdate
-
+from app.exceptions import MealPlanConfirmedError
 
 def create_meal_plan(
     db: Session,
@@ -65,6 +65,9 @@ def update_meal_plan(
     if db_plan is None:
         return None
 
+    if db_plan.status == "confirmed":
+        raise MealPlanConfirmedError
+
     db_plan.start_date = plan.start_date
     db_plan.end_date = plan.end_date
 
@@ -93,5 +96,44 @@ def delete_meal_plan(
 
     db.delete(db_plan)
     db.commit()
+
+    return db_plan
+
+def confirm_meal_plan(
+    db: Session,
+    plan_id: int,
+):
+    """
+    Confirma una planificación si todos sus slots tienen
+    exactamente una sugerencia seleccionada.
+    """
+    db_plan = (
+        db.query(MealPlan)
+        .filter(MealPlan.id == plan_id)
+        .first()
+    )
+
+    if db_plan is None:
+        return None
+
+    if not db_plan.meal_slots:
+        raise ValueError("Meal plan must have at least one meal slot")
+
+    for slot in db_plan.meal_slots:
+        selected_suggestions = [
+            suggestion
+            for suggestion in slot.suggestions
+            if suggestion.status == "selected"
+        ]
+
+        if len(selected_suggestions) != 1:
+            raise ValueError(
+                "Every meal slot must have exactly one selected suggestion"
+            )
+
+    db_plan.status = "confirmed"
+
+    db.commit()
+    db.refresh(db_plan)
 
     return db_plan

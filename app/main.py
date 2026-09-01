@@ -7,6 +7,7 @@ from app.db.session import SessionLocal
 from app.exceptions import (
     MealSlotDateOutOfRangeError,
     MealSuggestionAlreadyExistsError,
+    MealPlanConfirmedError,
 )
 
 from app.schemas.food import InventoryItemCreate, InventoryItemUpdate
@@ -87,6 +88,7 @@ from app.services.meal_plan import (
     get_meal_plan,
     update_meal_plan,
     delete_meal_plan,
+    confirm_meal_plan,
 )
 
 from app.services.meal_slot import (
@@ -623,11 +625,17 @@ def update_meal_plan_endpoint(
     """
     Actualiza una planificación.
     """
-    updated_plan = update_meal_plan(
-        db,
-        plan_id,
-        plan,
-    )
+    try:
+        updated_plan = update_meal_plan(
+            db,
+            plan_id,
+            plan,
+        )
+    except MealPlanConfirmedError:
+        raise HTTPException(
+            status_code=400,
+            detail="Meal plan is already confirmed",
+        )
 
     if updated_plan is None:
         raise HTTPException(
@@ -656,6 +664,31 @@ def delete_meal_plan_endpoint(
 
     return plan
 
+@app.post("/meal-plans/{plan_id}/confirm")
+def confirm_meal_plan_endpoint(
+    plan_id: int,
+    db: Session = Depends(get_db),
+):
+    """
+    Confirma una planificación.
+    """
+    try:
+        plan = confirm_meal_plan(db, plan_id)
+
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=400,
+            detail=str(exc),
+        )
+
+    if plan is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Meal plan not found",
+        )
+
+    return plan
+
 @app.post("/meal-slots")
 def create_meal_slot_endpoint(
     slot: MealSlotCreate,
@@ -666,6 +699,12 @@ def create_meal_slot_endpoint(
     """
     try:
         created_slot = create_meal_slot(db, slot)
+
+    except MealPlanConfirmedError:
+        raise HTTPException(
+            status_code=400,
+            detail="Meal plan is already confirmed",
+        )
 
     except MealSlotDateOutOfRangeError:
         # El MealPlan existe, pero la fecha no pertenece a su periodo.
@@ -720,11 +759,17 @@ def update_meal_slot_endpoint(
     db: Session = Depends(get_db),
 ):
     try:
-        # El servicio se encarga de validar la regla de negocio.
+        # El servicio se encarga de validar las reglas de negocio.
         updated_slot = update_meal_slot(
             db,
             slot_id,
             slot,
+        )
+
+    except MealPlanConfirmedError:
+        raise HTTPException(
+            status_code=400,
+            detail="Meal plan is already confirmed",
         )
 
     except MealSlotDateOutOfRangeError:
@@ -752,13 +797,23 @@ def delete_meal_slot_endpoint(
     """
     Elimina un hueco de comida.
     """
-    slot = delete_meal_slot(db, slot_id)
+    try:
+        slot = delete_meal_slot(
+            db,
+            slot_id,
+        )
+
+    except MealPlanConfirmedError:
+        raise HTTPException(
+            status_code=400,
+            detail="Meal plan is already confirmed",
+        )
 
     if slot is None:
         raise HTTPException(
             status_code=404,
-        detail="Meal slot not found",
-    )
+            detail="Meal slot not found",
+        )
 
     return slot
 

@@ -41,6 +41,7 @@ class MealPlanResponse(BaseModel):
     id: int
     start_date: date
     end_date: date
+    status: str
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)

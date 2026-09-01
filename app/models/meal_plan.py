@@ -1,6 +1,6 @@
 from datetime import UTC, date, datetime
 
-from sqlalchemy import Date, DateTime, Integer
+from sqlalchemy import Date, DateTime, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
@@ -27,6 +27,12 @@ class MealPlan(Base):
     end_date: Mapped[date] = mapped_column(
         Date,
         nullable=False
+    )
+
+    status: Mapped[str] = mapped_column(
+        String(20),
+        default="draft",
+        nullable=False,
     )
 
     created_at: Mapped[datetime] = mapped_column(
