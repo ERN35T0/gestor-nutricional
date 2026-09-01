@@ -14,7 +14,11 @@ from app.schemas.product import ProductCreate, ProductUpdate
 from app.schemas.space import SpaceCreate, SpaceUpdate
 from app.schemas.recipe import RecipeCreate, RecipeUpdate
 from app.schemas.meal_plan import MealPlanCreate, MealPlanUpdate
-from app.schemas.meal_suggestion import MealSuggestionCreate
+
+from app.schemas.meal_suggestion import (
+    MealSuggestionCreate,
+    MealSuggestionResponse,
+)
 
 from app.schemas.recipe_ingredient import (
     RecipeIngredientCreate,
@@ -95,10 +99,12 @@ from app.services.meal_slot import (
 
 from app.services.meal_suggestion import (
     create_meal_suggestion,
+    delete_meal_suggestion,
+    generate_meal_suggestions,
+    get_meal_suggestion,
     get_meal_suggestions,
     get_meal_suggestions_for_slot,
-    get_meal_suggestion,
-    delete_meal_suggestion,
+    update_meal_suggestion_status,
 )
 
 app = FastAPI()
@@ -843,6 +849,86 @@ def delete_meal_suggestion_endpoint(
     suggestion = delete_meal_suggestion(
         db,
         suggestion_id,
+    )
+
+    if suggestion is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Meal suggestion not found",
+        )
+
+    return suggestion
+
+@app.post(
+    "/meal-slots/{meal_slot_id}/generate-suggestions",
+    response_model=list[MealSuggestionResponse],
+)
+def generate_meal_suggestions_endpoint(
+    meal_slot_id: int,
+    db: Session = Depends(get_db),
+):
+    """
+    Genera hasta dos sugerencias de comida para un hueco.
+    """
+    suggestions = generate_meal_suggestions(
+        db,
+        meal_slot_id,
+    )
+
+    if suggestions is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Meal slot not found",
+        )
+
+    if suggestions == "generation_not_available":
+        raise HTTPException(
+            status_code=400,
+            detail="No more meal suggestion generations available",
+        )
+
+    return suggestions
+
+@app.patch("/meal-suggestions/{suggestion_id}/select")
+def select_meal_suggestion_endpoint(
+    suggestion_id: int,
+    db: Session = Depends(get_db),
+):
+    """
+    Selecciona una sugerencia de comida.
+    """
+    suggestion = update_meal_suggestion_status(
+        db,
+        suggestion_id,
+        "selected",
+    )
+
+    if suggestion is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Meal suggestion not found",
+        )
+
+    if suggestion == "already_selected":
+        raise HTTPException(
+            status_code=400,
+            detail="Another meal suggestion is already selected for this meal slot",
+        )
+
+    return suggestion
+
+@app.patch("/meal-suggestions/{suggestion_id}/reject")
+def reject_meal_suggestion_endpoint(
+    suggestion_id: int,
+    db: Session = Depends(get_db),
+):
+    """
+    Rechaza una sugerencia de comida.
+    """
+    suggestion = update_meal_suggestion_status(
+        db,
+        suggestion_id,
+        "rejected",
     )
 
     if suggestion is None:

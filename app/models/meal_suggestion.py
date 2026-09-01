@@ -1,4 +1,4 @@
-from sqlalchemy import ForeignKey, Integer, UniqueConstraint
+from sqlalchemy import ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
@@ -34,6 +34,18 @@ class MealSuggestion(Base):
 
     prepared_meal_id: Mapped[int] = mapped_column(
         ForeignKey("prepared_meals.id"),
+        nullable=False,
+    )
+
+    status: Mapped[str] = mapped_column(
+        String(20),
+        default="pending",
+        nullable=False,
+    )
+
+    generation: Mapped[int] = mapped_column(
+        Integer,
+        default=1,
         nullable=False,
     )
 

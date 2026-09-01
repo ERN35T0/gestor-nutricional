@@ -18,5 +18,7 @@ class MealSuggestionResponse(BaseModel):
     id: int
     meal_slot_id: int
     prepared_meal_id: int
+    status: str
+    generation: int
 
     model_config = ConfigDict(from_attributes=True)
